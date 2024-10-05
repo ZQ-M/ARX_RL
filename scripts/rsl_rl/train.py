@@ -12,13 +12,13 @@ from omni.isaac.lab.app import AppLauncher
 # 打开SIM仿真
 parser = argparse.ArgumentParser(description="Tutorial on ZQM creating ARX.")#
 parser.add_argument("--size", type=float, default=1.0, help="传进一个浮点参数，暂时用于控制物块的体积(失效)")#自定义的传入参数
-parser.add_argument("--count", type=int , default= 1 , help="传进一个整形参数，暂时用于控制实时仿真的数量(失效)")#自定义的传入参数
+parser.add_argument("--count", type=int , default=1 , help="传进一个整形参数，暂时用于控制实时仿真的数量(失效)")#自定义的传入参数
 #官方定义的参数
 parser.add_argument(
-    "--width", type=int, default=1280, help="视角默认渲染分辨率宽度"
+    "--width", type=int, default=800, help="视角默认渲染分辨率宽度"
 )
 parser.add_argument(
-    "--height", type=int, default=720, help="视角默认渲染分辨率高度"
+    "--height", type=int, default=600, help="视角默认渲染分辨率高度"
 )
 
 AppLauncher.add_app_launcher_args(parser)
@@ -34,7 +34,8 @@ import omni.isaac.lab.sim as sim_utils#仿真环境
 from omni.isaac.lab.utils.assets import ISAAC_NUCLEUS_DIR# 导入示例中的一个资产（桌子）
 from omni.isaac.lab_assets import CARTPOLE_CFG# 导入示例中的一个资产（倒立摆）
 from omni.isaac.core.prims import RigidPrimView #Sim接口修改LAB创建的物体位置
-import arx.isaac.interfaces
+# import arx.isaac.interfaces
+import ext_template.tasks
 
 def random_position(x_range=(-1.0, 1.0), y_range=(-1.0, 1.0), z_range=(0.0, 2.0)):
     x = torch.rand(1).item() * (x_range[1] - x_range[0]) + x_range[0]
@@ -56,7 +57,6 @@ def random_quaternion():#生成随机四元数
 
 #设计场景
 def design_scene():
-    ARX.on_startup()
     # 神说要有地面
     origins = [[0.0, 0.0, 0.0], [-1.0, 0.0, 0.0]]#origins存储两个地面的坐标
     prim_utils.create_prim("/World/Origin1", "Xform", translation=origins[0])#机器人地面1，坐标是origins[0]
@@ -93,7 +93,7 @@ def design_scene():
     )
     # # 物体随机化
     # # 随机重置圆锥的位置
-    # cone_position = random_position()
+    cone_position = random_position()
     # cone_orient = random_quaternion()
     # # 找到物块（圆锥和长方体）的模拟器全局路径
     # cone_prim_path = RigidPrimView(prim_paths_expr="/World/Objects/ConeRigid")
