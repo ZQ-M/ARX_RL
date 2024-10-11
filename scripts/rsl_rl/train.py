@@ -12,7 +12,7 @@ from omni.isaac.lab.app import AppLauncher
 # 打开SIM仿真
 parser = argparse.ArgumentParser(description="Tutorial on ZQM creating ARX.")#
 parser.add_argument("--size", type=float, default=1.0, help="传进一个浮点参数，暂时用于控制物块的体积(失效)")#自定义的传入参数
-parser.add_argument("--count", type=int , default=1 , help="传进一个整形参数，暂时用于控制实时仿真的数量(失效)")#自定义的传入参数
+parser.add_argument("--number", type=int , default=1 , help="传进一个整形参数，用于控制实时仿真的数量")#自定义的传入参数
 #官方定义的参数
 parser.add_argument(
     "--width", type=int, default=800, help="视角默认渲染分辨率宽度"
@@ -26,17 +26,17 @@ args_cli = parser.parse_args()
 app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
 
-#Isaac Sim 和其他库中导入不同的 Python 模块
-from omni.isaac.lab.sim import SimulationCfg, SimulationContext
-from omni.isaac.lab.assets import Articulation #用于操作资产（机器人关节控制） 
+# Isaac Sim 和其他库中导入不同的 Python 模块
 import omni.isaac.core.utils.prims as prim_utils
 import omni.isaac.lab.sim as sim_utils#仿真环境
 from omni.isaac.lab.utils.assets import ISAAC_NUCLEUS_DIR# 导入示例中的一个资产（桌子）
-from omni.isaac.lab_assets import CARTPOLE_CFG# 导入示例中的一个资产（倒立摆）
-from omni.isaac.core.prims import RigidPrimView #Sim接口修改LAB创建的物体位置
-# import arx.isaac.interfaces
-import ext_template.tasks
+from omni.isaac.lab.utils import configclass
 
+# #第三方自定义库（ISAAC扩展）
+# import arx.isaac.interfaces
+# import ext_template.tasks
+
+# 生成随机位置
 def random_position(x_range=(-1.0, 1.0), y_range=(-1.0, 1.0), z_range=(0.0, 2.0)):
     x = torch.rand(1).item() * (x_range[1] - x_range[0]) + x_range[0]
     y = torch.rand(1).item() * (y_range[1] - y_range[0]) + y_range[0]
@@ -55,19 +55,11 @@ def random_quaternion():#生成随机四元数
     w = sqrt_u1 * torch.cos(u3)
     return [x.item(), y.item(), z.item(), w.item()]
 
-#设计场景
+#设计初始化场景（不纳入环境单元的东西，例如地面和光照）
 def design_scene():
     # 神说要有地面
-    origins = [[0.0, 0.0, 0.0], [-1.0, 0.0, 0.0]]#origins存储两个地面的坐标
-    prim_utils.create_prim("/World/Origin1", "Xform", translation=origins[0])#机器人地面1，坐标是origins[0]
-    prim_utils.create_prim("/World/Origin2", "Xform", translation=origins[1])#机器人地面2，坐标是origins[1]
     cfg_ground = sim_utils.GroundPlaneCfg()#创造通用世界地面
     cfg_ground.func("/World/defaultGroundPlane", cfg_ground)#放置到环境中
-    
-    # 神说要有机械臂
-    cartpole_cfg = CARTPOLE_CFG.copy()
-    cartpole_cfg.prim_path = "/World/Origin.*/Robot"
-    cartpole = Articulation(cfg=cartpole_cfg)
 
     # 神说要有光
     cfg_light_distant = sim_utils.DistantLightCfg(
@@ -79,99 +71,155 @@ def design_scene():
     # 神说要有文件夹
     prim_utils.create_prim("/World/Objects", "Xform")
 
-    # 神说要有刚体圆锥
-    cfg_cone_rigid = sim_utils.ConeCfg(
-        radius=0.15,#半径
-        height=0.5,#高度
-        rigid_props=sim_utils.RigidBodyPropertiesCfg(),#刚体
-        mass_props=sim_utils.MassPropertiesCfg(mass=1.0),#质量
-        collision_props=sim_utils.CollisionPropertiesCfg(),#碰撞箱
-        visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 1.0, 0.0)),#颜色
+import math
+import omni.isaac.lab.envs.mdp as mdp
+from omni.isaac.lab.envs import ManagerBasedEnv,ManagerBasedEnvCfg #用来创建基础强化环境单元并配置单元，ISAACLAB将此基础类进行复制
+from omni.isaac.lab.managers import EventTermCfg as EventTerm
+from omni.isaac.lab.managers import ObservationGroupCfg as ObsGroup #观察者设定
+from omni.isaac.lab.managers import ObservationTermCfg as ObsTerm #观察者设定
+from omni.isaac.lab.managers import SceneEntityCfg #场景中的对象
+from omni.isaac.lab.scene import InteractiveSceneCfg#自定义场景所用的库
+
+@configclass
+class ActionsCfg:
+    """环境中机器人具体的动作设置(暂时为空)"""
+
+@configclass
+class ObservationsCfg:
+    """Observation specifications for the environment."""
+
+    @configclass
+    class PolicyCfg(ObsGroup):
+        """观察者的政策制定"""
+        # observation terms (order preserved)
+        joint_pos_rel = ObsTerm(func=mdp.joint_pos_rel) #实时的滑块位置
+        joint_vel_rel = ObsTerm(func=mdp.joint_vel_rel) #实时的滑块速度
+        def __post_init__(self) -> None:
+            self.enable_corruption = False #是否引用数据噪声来模拟现实环境
+            self.concatenate_terms = True  #是否将多个观察对象串联表示出来
+
+    # observation groups
+    policy: PolicyCfg = PolicyCfg()
+
+
+@configclass
+class EventCfg:
+    """事件的政策制定"""
+
+    # on startup
+    add_pole_mass = EventTerm(
+        func=mdp.randomize_rigid_body_mass,
+        mode="startup",
+        params={
+            "asset_cfg": SceneEntityCfg("robot", body_names=["pole"]),
+            "mass_distribution_params": (0.1, 0.5),
+            "operation": "add",
+        },
     )
-    cfg_cone_rigid.func(
-        "/World/Objects/ConeRigid", cfg_cone_rigid, translation=(-0.2, 0.0, 2.0), orientation=(0.5, 0.0, 0.5, 0.0)#坐标和朝向
+
+    # on reset
+    reset_cart_position = EventTerm(
+        func=mdp.reset_joints_by_offset,
+        mode="reset",
+        params={
+            "asset_cfg": SceneEntityCfg("robot", joint_names=["slider_to_cart"]),
+            "position_range": (-1.0, 1.0),
+            "velocity_range": (-0.1, 0.1),
+        },
     )
-    # # 物体随机化
-    # # 随机重置圆锥的位置
-    cone_position = random_position()
-    # cone_orient = random_quaternion()
-    # # 找到物块（圆锥和长方体）的模拟器全局路径
-    # cone_prim_path = RigidPrimView(prim_paths_expr="/World/Objects/ConeRigid")
 
-    # cone_prim_path.set_world_poses(positions=cone_position)
-    print(f"[INFO]: Resetting cone position to {cone_position}...")
-
-    # 神说要有可变形长方体
-    cfg_cuboid_deformable = sim_utils.MeshCuboidCfg(
-        size=(args_cli.size, 0.5, 0.2),
-        deformable_props=sim_utils.DeformableBodyPropertiesCfg(),
-        visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 0.0, 1.0)),#颜色设置为蓝色
-        physics_material=sim_utils.DeformableBodyMaterialCfg(),
+    reset_pole_position = EventTerm(
+        func=mdp.reset_joints_by_offset,
+        mode="reset",
+        params={
+            "asset_cfg": SceneEntityCfg("robot", joint_names=["cart_to_pole"]),
+            "position_range": (-0.125 * math.pi, 0.125 * math.pi),
+            "velocity_range": (-0.01 * math.pi, 0.01 * math.pi),
+        },
     )
-    cfg_cuboid_deformable.func("/World/Objects/CuboidDeformable", cfg_cuboid_deformable, translation=(0.15, 0.0, 2.0))
 
-    # 神说要从外部导入一张桌子
-    cfg = sim_utils.UsdFileCfg(usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Mounts/SeattleLabTable/table_instanceable.usd")
-    cfg.func("/World/Objects/Table", cfg, translation=(0.0, 0.0, 1.05))
+@configclass
+class ARXArmSceneCfg(InteractiveSceneCfg):
+    """自定义的ARM场景设置"""
+    def __post_init__(self):
+        
+        # # 神说要从外部导入一张桌子
+        # cfg = sim_utils.UsdFileCfg(usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Mounts/SeattleLabTable/table_instanceable.usd")
+        # cfg.func("/World/Objects/Table", cfg, translation=(0.0, 0.0, 1.05))
 
-    # 神说要将机器人状态返回出去
-    scene_entities = {"cartpole": cartpole}#记录机器人的状态
-    return scene_entities, origins#返回机器人的状态和场景的初始位置
+        super().__post_init__()  # 调用父类的初始化
+        self.num_envs = 512  # 自定义环境单元数量
+        self.env_spacing = 3.0  # 自定义环境单元之间的间隔
+        self.custom_gravity = [0.0, 0.0, -9.8]  # 自定义环境单元重力（单位：m/s）
+        # 其他自定义场景设置可以在这里添加
+        # 例如添加额外的场景实体、关节设置等
+@configclass
+class ARXArmEnvCfg(ManagerBasedEnvCfg):
+    """配置整体强化环境Scene + Observation + Action + Event"""
 
-def run_simulator(sim: sim_utils.SimulationContext, entities: dict[str, Articulation], origins: torch.Tensor):
-    """HELLO 这是我的新函数"""
-    robot = entities["cartpole"]
+    # Scene settings
+    scene: ARXArmSceneCfg = ARXArmSceneCfg(num_envs=512, env_spacing=3.0)  # 使用自定义的场景配置
+    # Basic settings
+    observations: ObservationsCfg = ObservationsCfg()# 观察者设置（返回值）
+    actionsla了: ActionsCfg = ActionsCfg()# 动作设置（尝试）
+    events:EventCfg = EventCfg()# 事件设置（政策）
 
-    # 定义仿真渲染的步长（下面设置的100HZ，500就是5s）
-    sim_dt = sim.get_physics_dt()
-    count = 0
-    
-    # 仿真循环
-    while simulation_app.is_running():
-        if count % 500 == 0:# 渲染 500 步长后重置
-            count = 0
+    def __post_init__(self):
+        """Post initialization."""
+        # viewer settings
+        self.viewer.eye = [4.5, 0.0, 6.0]# 第一人称摄像机所在位置
+        self.viewer.lookat = [0.0, 0.0, 2.0]# 第一人称摄像机所看向的目标点
+        # step settings
+        self.decimation = 4  # env step every 4 sim steps: 200Hz / 4 = 50Hz
+        # simulation settings
+        self.sim.dt = 0.005  # sim step every 5ms: 200Hz
 
-            # 机器人重置
-            root_state = robot.data.default_root_state.clone()
-            root_state[:, :3] += origins
-            robot.write_root_state_to_sim(root_state)
-            # 关节随机化
-            joint_pos, joint_vel = robot.data.default_joint_pos.clone(), robot.data.default_joint_vel.clone()
-            joint_pos += torch.rand_like(joint_pos) * 0.1
-            robot.write_joint_state_to_sim(joint_pos, joint_vel)
+from omni.isaac.lab_tasks.manager_based.classic.cartpole.cartpole_env_cfg import CartpoleSceneCfg
+@configclass
+class CartpoleEnvCfg(ManagerBasedEnvCfg):
 
-            robot.reset()
-            print("[INFO]: Resetting robot state...")
+    # Scene settings
+    scene = CartpoleSceneCfg(num_envs=1024, env_spacing=2.5)
+    # Basic settings
+    observations = ObservationsCfg()
+    actions = ActionsCfg()
+    events = EventCfg()
 
-        # Apply random action
-        # -- generate random joint efforts
-        efforts = torch.randn_like(robot.data.joint_pos) * 5.0
-        # -- apply action to the robot
-        robot.set_joint_effort_target(efforts)
-        # -- write data to sim
-        robot.write_data_to_sim()
-        # Perform step
-        sim.step()
-        # Increment counter
-        count += 1
-        # Update buffers
-        robot.update(sim_dt)
+    def __post_init__(self):
+        """Post initialization."""
+        # viewer settings
+        self.viewer.eye = [4.5, 0.0, 6.0]
+        self.viewer.lookat = [0.0, 0.0, 2.0]
+        # step settings
+        self.decimation = 4  # env step every 4 sim steps: 500Hz / 4 = 125Hz
+        # simulation settings
+        self.sim.dt = 0.002  # sim step every 2ms: 500Hz
 
 def main():
-    # 设置仿真参数
-    sim_cfg = SimulationCfg(dt=0.01) #仿真渲染步长100HZ0.01秒
-    sim = SimulationContext(sim_cfg)
-    # 设置主摄像头位置和角度
-    sim.set_camera_view([2.5, 2.5, 2.5], [0.0, 0.0, 0.0])
+    """导入环境单元"""
+    env_cfg = CartpoleEnvCfg()
+    env_cfg.scene.num_envs = args_cli.number# 环境单元数量设置
+    # setup base environment
+    env = ManagerBasedEnv(cfg=env_cfg)
+    
+    # 仿真循环    
+    count = 0
+    while simulation_app.is_running():
+        with torch.inference_mode():
+            if count % 500 == 0:# 渲染 500 步长后重置
+                count = 0
+                env.reset()
+                print("[INFO]: Resetting environment and robot")
+            # # sample random actions
+            # joint_efforts = torch.randn_like(env.action_manager.action)
+            # # step the environment
+            # obs, _ = env.step(joint_efforts)
+            # print current orientation of pole
+            # update counter
+            count += 1
 
-    # Design scene
-    scene_entities, scene_origins = design_scene()#神的设计场景，返回机器人状态和初始位置
-    scene_origins = torch.tensor(scene_origins, device=sim.device)#转换为一个 PyTorch 的 Tensor 对象。
-    # 仿真的要求：All the scene designing must happen bhezheefore the simulation starts.
-    #开始仿真
-    sim.reset()
-    print("[INFO]: Setup complete...")
-    run_simulator(sim,scene_entities,scene_origins)
+    # close the environment
+    env.close()
 
 
 if __name__ == "__main__":
@@ -187,3 +235,59 @@ if __name__ == "__main__":
 
 # 是的，你可以通过 Isaac Sim 的接口修改由 Isaac Lab 创建的物体的位置。
 # prims 是用来调用的，objects 是用来创建
+
+#以下是要改变的环境
+#    # 神说要有刚体圆锥
+#     cfg_cone_rigid = sim_utils.ConeCfg(
+#         radius=0.15,#半径
+#         height=0.5,#高度
+#         rigid_props=sim_utils.RigidBodyPropertiesCfg(),#刚体
+#         mass_props=sim_utils.MassPropertiesCfg(mass=1.0),#质量
+#         collision_props=sim_utils.CollisionPropertiesCfg(),#碰撞箱
+#         visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 1.0, 0.0)),#颜色
+#     )
+#     cfg_cone_rigid.func(
+#         "/World/Objects/ConeRigid", cfg_cone_rigid, translation=(-0.2, 0.0, 2.0), orientation=(0.5, 0.0, 0.5, 0.0)#坐标和朝向
+#     )
+#     # # 物体随机化
+#     # # 随机重置圆锥的位置
+#     cone_position = random_position()
+#     # cone_orient = random_quaternion()
+#     # # 找到物块（圆锥和长方体）的模拟器全局路径
+#     # cone_prim_path = RigidPrimView(prim_paths_expr="/World/Objects/ConeRigid")
+
+#     # cone_prim_path.set_world_poses(positions=cone_position)
+#     print(f"[INFO]: Resetting cone position to {cone_position}...")
+
+#     # 神说要有可变形长方体
+#     cfg_cuboid_deformable = sim_utils.MeshCuboidCfg(
+#         size=(args_cli.size, 0.5, 0.2),
+#         deformable_props=sim_utils.DeformableBodyPropertiesCfg(),
+#         visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 0.0, 1.0)),#颜色设置为蓝色
+#         physics_material=sim_utils.DeformableBodyMaterialCfg(),
+#     )
+#     cfg_cuboid_deformable.func("/World/Objects/CuboidDeformable", cfg_cuboid_deformable, translation=(0.15, 0.0, 2.0))
+
+# @configclass
+# class CartpoleSceneCfg(InteractiveSceneCfg):
+#     """Configuration for a cart-pole scene."""
+
+#     # ground plane
+#     ground = AssetBaseCfg(
+#         prim_path="/World/ground",
+#         spawn=sim_utils.GroundPlaneCfg(size=(100.0, 100.0)),
+#     )
+
+#     # cartpole
+#     robot: ArticulationCfg = CARTPOLE_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
+
+#     # lights
+#     dome_light = AssetBaseCfg(
+#         prim_path="/World/DomeLight",
+#         spawn=sim_utils.DomeLightCfg(color=(0.9, 0.9, 0.9), intensity=500.0),
+#     )
+#     distant_light = AssetBaseCfg(
+#         prim_path="/World/DistantLight",
+#         spawn=sim_utils.DistantLightCfg(color=(0.9, 0.9, 0.9), intensity=2500.0),
+#         init_state=AssetBaseCfg.InitialStateCfg(rot=(0.738, 0.477, 0.477, 0.0)),
+#     )
