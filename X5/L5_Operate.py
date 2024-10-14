@@ -36,7 +36,7 @@ class ARX_X5SceneCfg(InteractiveSceneCfg):
 
     # 场景光线 有一个就行
     dome_light = AssetBaseCfg(
-        prim_path="/World/Light", spawn=sim_utils.DomeLightCfg(intensity=3000.0, color=(0.75, 0.75, 0.75))
+        prim_path="/World/Light", spawn=sim_utils.DomeLightCfg(intensity=300.0, color=(0.75, 0.75, 0.75))
     )
 
     GreenCone = AssetBaseCfg(
@@ -71,9 +71,9 @@ class ARX_X5SceneCfg(InteractiveSceneCfg):
         spawn= sim_utils.CuboidCfg(
             size = [0.1,0.1,0.1],#长方体的大小是？长宽高
             visible=True,        #是否可见？
-            rigid_props=sim_utils.RigidBodyPropertiesCfg(),#刚体
-            mass_props=sim_utils.MassPropertiesCfg(mass=1.0),#质量
-            collision_props=sim_utils.CollisionPropertiesCfg(),#碰撞箱
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(),         #刚体
+            mass_props=sim_utils.MassPropertiesCfg(mass=1.0),       #质量
+            collision_props=sim_utils.CollisionPropertiesCfg(),     #碰撞箱
             visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 0.0, 1.0)),#颜色
         )
     )
@@ -95,17 +95,17 @@ class ARX_X5SceneCfg(InteractiveSceneCfg):
     WhiteSphere  = AssetBaseCfg(
         prim_path="{ENV_REGEX_NS}/Sphere",
         spawn= sim_utils.SphereCfg(
-            radius=0.03,    #半径
-            visible=True,   #是否可见？
-            rigid_props=sim_utils.RigidBodyPropertiesCfg(),#刚体
-            mass_props=sim_utils.MassPropertiesCfg(mass=1.0),#质量
-            collision_props=sim_utils.CollisionPropertiesCfg(),#碰撞箱
+            radius=0.03,                                        #半径
+            visible=True,                                       #是否可见？
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(),     #刚体
+            mass_props=sim_utils.MassPropertiesCfg(mass=1.0),   #质量
+            collision_props=sim_utils.CollisionPropertiesCfg(), #碰撞箱
             visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.01, 0.01, 0.01)),#颜色
         )
     )
     # X5_ARM
     X5_ARM = ArticulationCfg(
-        prim_path="{ENV_REGEX_NS}/X5", spawn=sim_utils.UsdFileCfg(usd_path="/home/ultron/ARX_RL/X5/x5.usd"))
+        prim_path="{ENV_REGEX_NS}/X5", spawn=sim_utils.UsdFileCfg(usd_path="/home/ultron/ARX_RL/X5/franka_ground.usd"))
     # cartpole: ArticulationCfg = CARTPOLE_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
 
 

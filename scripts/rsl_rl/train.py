@@ -15,10 +15,10 @@ parser.add_argument("--size", type=float, default=1.0, help="传进一个浮点�
 parser.add_argument("--number", type=int , default=1 , help="传进一个整形参数，用于控制实时仿真的数量")#自定义的传入参数
 #官方定义的参数
 parser.add_argument(
-    "--width", type=int, default=800, help="视角默认渲染分辨率宽度"
+    "--width", type=int, default=1280, help="视角默认渲染分辨率宽度"
 )
 parser.add_argument(
-    "--height", type=int, default=600, help="视角默认渲染分辨率高度"
+    "--height", type=int, default=720, help="视角默认渲染分辨率高度"
 )
 
 AppLauncher.add_app_launcher_args(parser)
