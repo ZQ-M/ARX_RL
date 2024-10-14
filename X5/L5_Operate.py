@@ -20,7 +20,7 @@ simulation_app = app_launcher.app
 import torch
 
 import omni.isaac.lab.sim as sim_utils
-from omni.isaac.lab.assets import ArticulationCfg,AssetBaseCfg
+from omni.isaac.lab.assets import ArticulationCfg, AssetBaseCfg
 from omni.isaac.lab.scene import InteractiveScene, InteractiveSceneCfg
 from omni.isaac.lab.sim import SimulationContext
 from omni.isaac.lab.utils import configclass
@@ -41,71 +41,71 @@ class ARX_X5SceneCfg(InteractiveSceneCfg):
 
     GreenCone = AssetBaseCfg(
         prim_path="{ENV_REGEX_NS}/Cones",
-        spawn= sim_utils.ConeCfg(
-            radius=0.025,#半径
-            height=0.1,#高度
-            visible=True,        #是否可见？
-            rigid_props=sim_utils.RigidBodyPropertiesCfg(),#刚体
-            mass_props=sim_utils.MassPropertiesCfg(mass=1.0),#质量
-            collision_props=sim_utils.CollisionPropertiesCfg(),#碰撞箱
-            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 1.0, 0.0)),#颜色
+        spawn=sim_utils.ConeCfg(
+            radius=0.025,       # 半径
+            height=0.1,         # 高度
+            visible=True,       # 是否可见？
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(),         # 刚体
+            mass_props=sim_utils.MassPropertiesCfg(mass=1.0),       # 质量
+            collision_props=sim_utils.CollisionPropertiesCfg(),     # 碰撞箱
+            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 1.0, 0.0)),  # 颜色
         )
     )
-    #红色的胶囊体
+    # 红色的胶囊体
     RedCapsule = AssetBaseCfg(
         prim_path="{ENV_REGEX_NS}/Capsule",
-        spawn= sim_utils.CapsuleCfg(
-            radius=0.025,        #半径
-            height=0.1,          #高度
+        spawn=sim_utils.CapsuleCfg(
+            radius=0.025,        # 半径
+            height=0.1,          # 高度
             axis='Z',            # 胶囊体沿着Z轴放置
-            visible=True,        #是否可见？
-            rigid_props=sim_utils.RigidBodyPropertiesCfg(),#刚体
-            mass_props=sim_utils.MassPropertiesCfg(mass=1.0),#质量
-            collision_props=sim_utils.CollisionPropertiesCfg(),#碰撞箱
-            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0)),#颜色
+            visible=True,        # 是否可见？
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(),         # 刚体
+            mass_props=sim_utils.MassPropertiesCfg(mass=1.0),       # 质量
+            collision_props=sim_utils.CollisionPropertiesCfg(),     # 碰撞箱
+            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0)),  # 颜色
         )
     )
-    #蓝色的长方体
+    # 蓝色的长方体
     BlueCuboid = AssetBaseCfg(
         prim_path="{ENV_REGEX_NS}/Cuboid",
-        spawn= sim_utils.CuboidCfg(
-            size = [0.1,0.1,0.1],#长方体的大小是？长宽高
-            visible=True,        #是否可见？
-            rigid_props=sim_utils.RigidBodyPropertiesCfg(),         #刚体
-            mass_props=sim_utils.MassPropertiesCfg(mass=1.0),       #质量
-            collision_props=sim_utils.CollisionPropertiesCfg(),     #碰撞箱
-            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 0.0, 1.0)),#颜色
+        spawn=sim_utils.CuboidCfg(
+            size=[0.1, 0.1, 0.1],       # 长方体的大小是？长宽高
+            visible=True,               # 是否可见？
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(),         # 刚体
+            mass_props=sim_utils.MassPropertiesCfg(mass=1.0),       # 质量
+            collision_props=sim_utils.CollisionPropertiesCfg(),     # 碰撞箱
+            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 0.0, 1.0)),  # 颜色
         )
     )
-    #黑色的圆柱
+    # 黑色的圆柱
     DarkCylinder = AssetBaseCfg(
         prim_path="{ENV_REGEX_NS}/Cylinder",
-        spawn= sim_utils.CylinderCfg(
-            radius=0.025,#半径
-            height=0.1,  #高度
-            axis='Z',    # 圆柱体沿着Z轴放置
-            visible=True,#是否可见？
-            rigid_props=sim_utils.RigidBodyPropertiesCfg(),#刚体
-            mass_props=sim_utils.MassPropertiesCfg(mass=1.0),#质量
-            collision_props=sim_utils.CollisionPropertiesCfg(),#碰撞箱
-            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 0.0, 0.0)),#颜色
+        spawn=sim_utils.CylinderCfg(
+            radius=0.025,               # 半径
+            height=0.1,                 # 高度
+            axis='Z',                   # 圆柱体沿着Z轴放置
+            visible=True,               # 是否可见？
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(),         # 刚体
+            mass_props=sim_utils.MassPropertiesCfg(mass=1.0),       # 质量
+            collision_props=sim_utils.CollisionPropertiesCfg(),     # 碰撞箱
+            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 0.0, 0.0)),  # 颜色
         )
     )
-    #白色的球
-    WhiteSphere  = AssetBaseCfg(
+    # 白色的球
+    WhiteSphere = AssetBaseCfg(
         prim_path="{ENV_REGEX_NS}/Sphere",
-        spawn= sim_utils.SphereCfg(
-            radius=0.03,                                        #半径
-            visible=True,                                       #是否可见？
-            rigid_props=sim_utils.RigidBodyPropertiesCfg(),     #刚体
-            mass_props=sim_utils.MassPropertiesCfg(mass=1.0),   #质量
-            collision_props=sim_utils.CollisionPropertiesCfg(), #碰撞箱
-            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.01, 0.01, 0.01)),#颜色
+        spawn=sim_utils.SphereCfg(
+            radius=0.03,                                            # 半径
+            visible=True,                                           # 是否可见？
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(),         # 刚体
+            mass_props=sim_utils.MassPropertiesCfg(mass=1.0),       # 质量
+            collision_props=sim_utils.CollisionPropertiesCfg(),     # 碰撞箱
+            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.01, 0.01, 0.01)),  # 颜色
         )
     )
-    # X5_ARM
-    X5_ARM = ArticulationCfg(
-        prim_path="{ENV_REGEX_NS}/X5", spawn=sim_utils.UsdFileCfg(usd_path="/home/ultron/ARX_RL/X5/franka_ground.usd"))
+    # # X5_ARM
+    # X5_ARM = ArticulationCfg(
+    #     prim_path="{ENV_REGEX_NS}/X5", spawn=sim_utils.UsdFileCfg(usd_path="/home/ultron/ARX_RL/X5/x5.usd"))
     # cartpole: ArticulationCfg = CARTPOLE_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
 
 
@@ -132,6 +132,7 @@ def run_simulator(sim: sim_utils.SimulationContext, scene: InteractiveScene):
         # Update buffers
         scene.update(sim_dt)
 
+
 def main():
     """Main function."""
     # Load kit helper
@@ -147,6 +148,7 @@ def main():
     sim.reset()
     # Now we are ready!
     print("[INFO]: Setup complete...")
+
     # Run the simulator
     run_simulator(sim, scene)
 
