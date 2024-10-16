@@ -36,7 +36,7 @@ class ARX_X5SceneCfg(InteractiveSceneCfg):
 
     # 场景光线 有一个就行
     dome_light = AssetBaseCfg(
-        prim_path="/World/Light", spawn=sim_utils.DomeLightCfg(intensity=300.0, color=(0.75, 0.75, 0.75))
+        prim_path="/World/Light", spawn=sim_utils.DomeLightCfg(intensity=3000.0, color=(0.75, 0.75, 0.75))
     )
 
     GreenCone = AssetBaseCfg(
