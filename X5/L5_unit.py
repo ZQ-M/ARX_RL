@@ -1,16 +1,5 @@
-# Copyright (c) 2022-2024, The Isaac Lab Project Developers.
-# All rights reserved.
-#
-# SPDX-License-Identifier: BSD-3-Clause
-
-"""
-This script demonstrates how to create a simple environment with a cartpole. It combines the concepts of
-scene, action, observation and event managers to create an environment.
-"""
-
-"""Launch Isaac Sim Simulator first."""
-
-
+# # 使用该脚本
+# /home/ultron/IsaacLab/isaaclab.sh -p /home/ultron/ARX_RL/X5/L5_unit.py --num_envs 25
 import argparse
 
 from omni.isaac.lab.app import AppLauncher
@@ -29,83 +18,13 @@ app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
 
 """Rest everything follows."""
-
-import math
 import torch
-
-import omni.isaac.lab.envs.mdp as mdp
 from omni.isaac.lab.envs import ManagerBasedEnv, ManagerBasedEnvCfg
-from omni.isaac.lab.managers import EventTermCfg as EventTerm
-from omni.isaac.lab.managers import ObservationGroupCfg as ObsGroup
-from omni.isaac.lab.managers import ObservationTermCfg as ObsTerm
-from omni.isaac.lab.managers import SceneEntityCfg
 from omni.isaac.lab.utils import configclass
-
-from omni.isaac.lab_tasks.manager_based.classic.cartpole.cartpole_env_cfg import CartpoleSceneCfg
-
-
-@configclass
-class ActionsCfg:
-    """Action specifications for the environment."""
-
-    joint_efforts = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["slider_to_cart"], scale=5.0)
-
-
-@configclass
-class ObservationsCfg:
-    """Observation specifications for the environment."""
-
-    @configclass
-    class PolicyCfg(ObsGroup):
-        """Observations for policy group."""
-
-        # observation terms (order preserved)
-        joint_pos_rel = ObsTerm(func=mdp.joint_pos_rel)
-        joint_vel_rel = ObsTerm(func=mdp.joint_vel_rel)
-
-        def __post_init__(self) -> None:
-            self.enable_corruption = False
-            self.concatenate_terms = True
-
-    # observation groups
-    policy: PolicyCfg = PolicyCfg()
-
-
-@configclass
-class EventCfg:
-    """Configuration for events."""
-
-    # on startup
-    add_pole_mass = EventTerm(
-        func=mdp.randomize_rigid_body_mass,
-        mode="startup",
-        params={
-            "asset_cfg": SceneEntityCfg("robot", body_names=["pole"]),
-            "mass_distribution_params": (0.1, 0.5),
-            "operation": "add",
-        },
-    )
-
-    # on reset
-    reset_cart_position = EventTerm(
-        func=mdp.reset_joints_by_offset,
-        mode="reset",
-        params={
-            "asset_cfg": SceneEntityCfg("robot", joint_names=["slider_to_cart"]),
-            "position_range": (-1.0, 1.0),
-            "velocity_range": (-0.1, 0.1),
-        },
-    )
-
-    reset_pole_position = EventTerm(
-        func=mdp.reset_joints_by_offset,
-        mode="reset",
-        params={
-            "asset_cfg": SceneEntityCfg("robot", joint_names=["cart_to_pole"]),
-            "position_range": (-0.125 * math.pi, 0.125 * math.pi),
-            "velocity_range": (-0.01 * math.pi, 0.01 * math.pi),
-        },
-    )
+from X5_env_cfg import x5SceneCfg
+from X5_env_cfg import ActionsCfg
+from X5_env_cfg import ObservationsCfg
+from X5_env_cfg import EventCfg
 
 
 @configclass
@@ -113,11 +32,11 @@ class CartpoleEnvCfg(ManagerBasedEnvCfg):
     """Configuration for the cartpole environment."""
 
     # Scene settings
-    scene = CartpoleSceneCfg(num_envs=1024, env_spacing=2.5)
+    scene = x5SceneCfg(num_envs=9, env_spacing=2.5)
     # # Basic settings
-    # observations = ObservationsCfg()
-    # actions = ActionsCfg()
-    # events = EventCfg()
+    observations = ObservationsCfg()
+    actions = ActionsCfg()
+    events = EventCfg()
 
     def __post_init__(self):
         """Post initialization."""
@@ -130,10 +49,14 @@ class CartpoleEnvCfg(ManagerBasedEnvCfg):
         self.sim.dt = 0.005  # sim step every 5ms: 200Hz
 
 
+from X5_env_cfg import X5EnvCfg
+
+
 def main():
     """Main function."""
     # parse the arguments
     env_cfg = CartpoleEnvCfg()
+    # env_cfg = X5EnvCfg()
     env_cfg.scene.num_envs = args_cli.num_envs
     # setup base environment
     env = ManagerBasedEnv(cfg=env_cfg)
@@ -143,15 +66,15 @@ def main():
     while simulation_app.is_running():
         with torch.inference_mode():
             # reset
-            if count % 300 == 0:
+            if count % 30000 == 0:
                 count = 0
                 env.reset()
                 print("-" * 80)
                 print("[INFO]: Resetting environment...")
-            # # sample random actions
-            # joint_efforts = torch.randn_like(env.action_manager.action)
-            # # step the environment
-            # obs, _ = env.step(joint_efforts)
+            # sample random actions
+            joint_efforts = torch.randn_like(env.action_manager.action)
+            # step the environment
+            obs, _ = env.step(joint_efforts)
             # # print current orientation of pole
             # print("[Env 0]: Pole joint: ", obs["policy"][0][1].item())
             # update counter

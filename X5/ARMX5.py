@@ -17,8 +17,8 @@ X5_CFG = ArticulationCfg(
             max_angular_velocity=1000.0,        # 最大角速度
             max_depenetration_velocity=100.0,   # 接触两个刚体相互接触的最大速度
             enable_gyroscopic_forces=True,      # 启用陀螺力。当物体快速旋转时，陀螺力会影响物体的旋转行为
-        ),  
-        articulation_props=sim_utils.ArticulationRootPropertiesCfg( # 结构物理属性
+        ),
+        articulation_props=sim_utils.ArticulationRootPropertiesCfg(  # 结构物理属性
             enabled_self_collisions=False,      # 关闭自身碰撞检测
             solver_position_iteration_count=4,  # 位置迭代次数，表示物理引擎每次模拟中用于解决位置约束的迭代次数
             solver_velocity_iteration_count=0,  # 速度迭代次数，表示物理引擎在模拟中用于解决速度约束的迭代次数

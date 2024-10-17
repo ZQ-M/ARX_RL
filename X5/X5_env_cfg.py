@@ -17,8 +17,9 @@ import omni.isaac.lab_tasks.manager_based.classic.cartpole.mdp as mdp
 ##
 # 预定义的配置
 ##
-from omni.isaac.lab_assets.cartpole import CARTPOLE_CFG  # isort:skip
+# from omni.isaac.lab_assets.cartpole import CARTPOLE_CFG  # isort:skip
 from ARMX5 import X5_CFG
+
 
 @configclass
 class x5SceneCfg(InteractiveSceneCfg):
@@ -41,7 +42,7 @@ class x5SceneCfg(InteractiveSceneCfg):
     distant_light = AssetBaseCfg(
         prim_path="/World/DistantLight",
         spawn=sim_utils.DistantLightCfg(color=(0.9, 0.9, 0.9), intensity=2500.0),
-        init_state=AssetBaseCfg.InitialStateCfg(rot=(0.477, 0.0)),
+        init_state=AssetBaseCfg.InitialStateCfg(rot=(0.738, 0.477, 0.477, 0.0)),
     )
 
 
@@ -51,8 +52,9 @@ class x5SceneCfg(InteractiveSceneCfg):
 @configclass
 class CommandsCfg:
     """Command terms for the MDP."""
-    # MDP 没有指令
-    null = mdp.NullCommandCfg()
+    # # MDP 没有指令
+    # null = mdp.NullCommandCfg()
+
 
 @configclass
 class ActionsCfg:
@@ -160,7 +162,7 @@ class CurriculumCfg:
 
 
 @configclass
-class CartpoleEnvCfg(ManagerBasedRLEnvCfg):
+class X5EnvCfg(ManagerBasedRLEnvCfg):
     """Configuration for the cartpole environment."""
 
     # Scene settings
@@ -169,21 +171,30 @@ class CartpoleEnvCfg(ManagerBasedRLEnvCfg):
     observations: ObservationsCfg = ObservationsCfg()
     actions: ActionsCfg = ActionsCfg()
     events: EventCfg = EventCfg()
-    # MDP settings
-    curriculum: CurriculumCfg = CurriculumCfg()
-    rewards: RewardsCfg = RewardsCfg()
-    terminations: TerminationsCfg = TerminationsCfg()
-    # No command generator
-    commands: CommandsCfg = CommandsCfg()
+
+    # # Scene settings
+    # scene = x5SceneCfg(num_envs=9, env_spacing=2.5)
+    # # # Basic settings
+    # observations = ObservationsCfg()
+    # actions = ActionsCfg()
+    # events = EventCfg()
+
+    # # MDP settings
+    # curriculum: CurriculumCfg = CurriculumCfg()
+    # rewards: RewardsCfg = RewardsCfg()
+    # terminations: TerminationsCfg = TerminationsCfg()
+    # # No command generator
+    # commands: CommandsCfg = CommandsCfg()
 
     # Post initialization
     def __post_init__(self) -> None:
         """Post initialization."""
         # general setting
-        self.decimation = 2
-        self.episode_length_s = 5
+        self.decimation = 4  # 仿真数据间隔几步重新渲染到可视化中
+        # self.episode_length_s = 5  # 每个仿真周期的持续时间为5秒
         # viewer settings
-        self.viewer.eye = (8.0, 0.0, 5.0)
+        self.viewer.eye = (8.0, 0.0, 5.0) 
+        self.viewer.lookat = [0.0, 0.0, 1.0]
         # simulation settings
-        self.sim.dt = 1 / 120
-        self.sim.render_interval = self.decimation
+        self.sim.dt = 1 / 200  # 200HZ仿真频率
+        # self.sim.render_interval = self.decimation

@@ -1,5 +1,5 @@
 # # 使用该脚本
-# /home/ultron/IsaacLab/isaaclab.sh -p /home/ultron/Desktop/TEST/L5_Operate.py --num_envs 32
+# /home/ultron/IsaacLab/isaaclab.sh -p /home/ultron/ARX_RL/X5/L5_Operate.py --num_envs 25
 
 import argparse
 
@@ -17,14 +17,14 @@ args_cli = parser.parse_args()
 app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
 
-import torch
+# import torch
 
 import omni.isaac.lab.sim as sim_utils
 from omni.isaac.lab.assets import ArticulationCfg, AssetBaseCfg
 from omni.isaac.lab.scene import InteractiveScene, InteractiveSceneCfg
 from omni.isaac.lab.sim import SimulationContext
 from omni.isaac.lab.utils import configclass
-from omni.isaac.lab_assets import CARTPOLE_CFG  # isort:skip
+# from omni.isaac.lab_assets import CARTPOLE_CFG  # isort:skip
 
 
 @configclass
@@ -69,7 +69,7 @@ class ARX_X5SceneCfg(InteractiveSceneCfg):
     BlueCuboid = AssetBaseCfg(
         prim_path="{ENV_REGEX_NS}/Cuboid",
         spawn=sim_utils.CuboidCfg(
-            size=[0.1, 0.1, 0.1],       # 长方体的大小是？长宽高
+            size=[0.1,0.1,0.1],       # 长方体的大小是？长宽高
             visible=True,               # 是否可见？
             rigid_props=sim_utils.RigidBodyPropertiesCfg(),         # 刚体
             mass_props=sim_utils.MassPropertiesCfg(mass=1.0),       # 质量
@@ -103,9 +103,9 @@ class ARX_X5SceneCfg(InteractiveSceneCfg):
             visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.01, 0.01, 0.01)),  # 颜色
         )
     )
-    # # X5_ARM
-    # X5_ARM = ArticulationCfg(
-    #     prim_path="{ENV_REGEX_NS}/X5", spawn=sim_utils.UsdFileCfg(usd_path="/home/ultron/ARX_RL/X5/x5.usd"))
+    # X5_ARM
+    X5_ARM = ArticulationCfg(
+        prim_path="{ENV_REGEX_NS}/X5", spawn=sim_utils.UsdFileCfg(usd_path="/home/ultron/ARX_RL/X5/x5.usd"))
     # cartpole: ArticulationCfg = CARTPOLE_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
 
 
@@ -143,7 +143,7 @@ def main():
     # Design scene
     scene_cfg = ARX_X5SceneCfg(num_envs=args_cli.num_envs, env_spacing=5.0)
     scene = InteractiveScene(scene_cfg)
-    
+
     # Play the simulator
     sim.reset()
     # Now we are ready!
@@ -158,4 +158,3 @@ if __name__ == "__main__":
     main()
     # close sim app
     simulation_app.close()
-
