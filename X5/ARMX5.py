@@ -10,7 +10,7 @@ from omni.isaac.lab.assets import ArticulationCfg
 
 X5_CFG = ArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
-        usd_path="/home/ultron/ARX_RL/X5/x5.usd",
+        usd_path="/home/ultron/ARX_RL/X5/x5Effort.usd",
         rigid_props=sim_utils.RigidBodyPropertiesCfg(  # 刚体物理属性
             rigid_body_enabled=True,            # 启用刚体
             max_linear_velocity=1000.0,         # 最大线速度
@@ -43,14 +43,14 @@ X5_CFG = ArticulationCfg(
             joint_names_expr=["joint1"],
             effort_limit=400.0,     # 最大力矩
             velocity_limit=100.0,   # 最大速度
-            stiffness=80.0,          # 关节刚度  0.0 意味着关节是柔性的
+            stiffness=100.0,          # 关节刚度  0.0 意味着关节是柔性的 
             damping=4.0,           # 关节阻尼系数，运动中能量损失，数值越高，运动的衰减越明显
         ),
         "joint2_actuator": ImplicitActuatorCfg(
             joint_names_expr=["joint2"],
             effort_limit=400.0,
             velocity_limit=100.0,
-            stiffness=80.0,
+            stiffness=100.0,
             damping=4.0,
         ),
         "joint3_actuator": ImplicitActuatorCfg(
@@ -64,21 +64,21 @@ X5_CFG = ArticulationCfg(
             joint_names_expr=["joint4"],
             effort_limit=400.0,
             velocity_limit=100.0,
-            stiffness=80.0,
+            stiffness=100.0,
             damping=4.0,
         ),
         "joint5_actuator": ImplicitActuatorCfg(
             joint_names_expr=["joint5"],
             effort_limit=400.0,
             velocity_limit=100.0,
-            stiffness=80.0,
+            stiffness=100.0,
             damping=4.0,
         ),
         "joint6_actuator": ImplicitActuatorCfg(
             joint_names_expr=["joint6"],
             effort_limit=400.0,
             velocity_limit=100.0,
-            stiffness=80.0,
+            stiffness=100.0,
             damping=4.0,
         ),
     },

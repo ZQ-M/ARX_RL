@@ -49,18 +49,21 @@ class ActionsCfg:
     """Action specifications for the MDP."""
     # asset_name表示作用的机器人，joint_names表示作用的机器人关节，scale表示该关节的力矩值将会乘以 100
     # Effort力矩 Position位置
-    # joint_effort1 = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["joint1"], scale=100.0)
-    joint_Position1 = mdp.JointPositionActionCfg(asset_name="robot", joint_names=["joint1"], scale=1)
-    # joint_effort2 = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["joint2"], scale=100.0)
-    joint_Position2 = mdp.JointPositionActionCfg(asset_name="robot", joint_names=["joint2"], scale=1)
-    # joint_effort3 = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["joint3"], scale=100.0)
-    joint_Position3 = mdp.JointPositionActionCfg(asset_name="robot", joint_names=["joint3"], scale=1)
-    # joint_effort4 = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["joint4"], scale=100.0)
-    joint_Position4 = mdp.JointPositionActionCfg(asset_name="robot", joint_names=["joint4"], scale=1)
-    # joint_effort5 = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["joint5"], scale=100.0)
-    joint_Position5 = mdp.JointPositionActionCfg(asset_name="robot", joint_names=["joint5"], scale=1)
-    # joint_effort6 = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["joint6"], scale=100.0)
-    joint_Position6 = mdp.JointPositionActionCfg(asset_name="robot", joint_names=["joint6"], scale=1)
+    # 注释掉 effort代表不用力矩
+    joint_effort1 = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["joint1"], scale=100.0)
+    joint_effort2 = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["joint2"], scale=100.0)
+    joint_effort3 = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["joint3"], scale=100.0)
+    joint_effort4 = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["joint4"], scale=100.0)
+    joint_effort5 = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["joint5"], scale=100.0)
+    joint_effort6 = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["joint6"], scale=100.0)
+    
+    # #注释掉position表示不用位置
+    # joint_Position1 = mdp.JointPositionActionCfg(asset_name="robot", joint_names=["joint1"], scale=1)
+    # joint_Position2 = mdp.JointPositionActionCfg(asset_name="robot", joint_names=["joint2"], scale=1)
+    # joint_Position3 = mdp.JointPositionActionCfg(asset_name="robot", joint_names=["joint3"], scale=1)
+    # joint_Position4 = mdp.JointPositionActionCfg(asset_name="robot", joint_names=["joint4"], scale=1)
+    # joint_Position5 = mdp.JointPositionActionCfg(asset_name="robot", joint_names=["joint5"], scale=1)
+    # joint_Position6 = mdp.JointPositionActionCfg(asset_name="robot", joint_names=["joint6"], scale=1)
 
 
 @configclass
@@ -127,11 +130,11 @@ class X5EnvCfg(ManagerBasedEnvCfg):
     def __post_init__(self) -> None:
         """初始化"""
         # general setting
-        self.decimation = 4  # 仿真数据间隔几步重新渲染到可视化中
+        self.decimation = 1  # 仿真数据间隔几步重新渲染到可视化中
         self.episode_length_s = 5  # 每个仿真周期的持续时间为5秒
         # viewer settings
         self.viewer.eye = (8.0, 0.0, 5.0)
         self.viewer.lookat = (0.0, 0.0, 1.0)
         # simulation settings
-        self.sim.dt = 1 / 200  # 200HZ仿真频率
+        self.sim.dt = 1 / 1000  # 200HZ仿真频率
         self.sim.render_interval = self.decimation

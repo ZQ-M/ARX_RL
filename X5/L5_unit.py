@@ -37,7 +37,7 @@ def main():
     while simulation_app.is_running():
         with torch.inference_mode():
             # reset
-            if count % 300 == 0:
+            if count % 3000 == 0:
                 count = 0
                 env.reset()
                 print("-" * 80)
@@ -45,7 +45,9 @@ def main():
             # 设置每个关节的力矩
             # joint_efforts = torch.randn_like(env.action_manager.action)
             # joint_efforts = torch.tensor([[0], [0], [0], [0], [0], [0], [0], [0]])
-            joint_efforts = torch.tensor([[0, 1, 1, 0, 0, 0]])
+            joint_efforts = torch.tensor([[20, 0, 0, 0, 0, 0,]])     # 位置或力量单独控制
+            # joint_efforts = torch.tensor([[2, 0, 0, 0, 0, 0,        # 力量和位置混合控制
+            #                                0, 0, 0, 0, 0, 0]])
             # 赋值到环境中
             obs = env.step(joint_efforts)
             # # print current orientation of pole
