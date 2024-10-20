@@ -1,5 +1,4 @@
-import math
-
+""" 配置场景 """
 import omni.isaac.lab.sim as sim_utils
 from omni.isaac.lab.assets import ArticulationCfg, AssetBaseCfg
 from omni.isaac.lab.envs import ManagerBasedEnvCfg
@@ -12,10 +11,6 @@ from omni.isaac.lab.utils import configclass
 
 import omni.isaac.lab_tasks.manager_based.classic.cartpole.mdp as mdp
 
-##
-# 预定义的配置
-##
-# from omni.isaac.lab_assets.cartpole import CARTPOLE_CFG  # isort:skip
 from ARMX5 import X5_CFG
 
 
@@ -33,14 +28,26 @@ class x5SceneCfg(InteractiveSceneCfg):
     robot: ArticulationCfg = X5_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
 
     # lights
-    dome_light = AssetBaseCfg(
-        prim_path="/World/DomeLight",
-        spawn=sim_utils.DomeLightCfg(color=(0.9, 0.9, 0.9), intensity=500.0),
-    )
     distant_light = AssetBaseCfg(
         prim_path="/World/DistantLight",
         spawn=sim_utils.DistantLightCfg(color=(0.9, 0.9, 0.9), intensity=2500.0),
         init_state=AssetBaseCfg.InitialStateCfg(rot=(0.738, 0.477, 0.477, 0.0)),
+    )
+
+    # CUP
+    Cup = AssetBaseCfg(
+        prim_path="{ENV_REGEX_NS}/Cup",
+        spawn=sim_utils.UsdFileCfg(
+            usd_path="/home/ultron/ARX_RL/X5/CUP.usd",  # 指定USD文件的路径
+            visible=True,                                          # 是否可见
+            mass_props=sim_utils.MassPropertiesCfg(mass=1.0),      # 质量
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(),        # 刚体
+            collision_props=sim_utils.CollisionPropertiesCfg(),    # 碰撞属性
+        ),
+        init_state=AssetBaseCfg.InitialStateCfg(
+            pos=(0.5, 0.0, 0.0),
+            rot=(0.0, 0.0, 0.0, 1.0)
+        )
     )
 
 
@@ -49,21 +56,21 @@ class ActionsCfg:
     """Action specifications for the MDP."""
     # asset_name表示作用的机器人，joint_names表示作用的机器人关节，scale表示该关节的力矩值将会乘以 100
     # Effort力矩 Position位置
-    # 注释掉 effort代表不用力矩
-    joint_effort1 = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["joint1"], scale=100.0)
-    joint_effort2 = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["joint2"], scale=100.0)
-    joint_effort3 = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["joint3"], scale=100.0)
-    joint_effort4 = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["joint4"], scale=100.0)
-    joint_effort5 = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["joint5"], scale=100.0)
-    joint_effort6 = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["joint6"], scale=100.0)
-    
-    # #注释掉position表示不用位置
-    # joint_Position1 = mdp.JointPositionActionCfg(asset_name="robot", joint_names=["joint1"], scale=1)
-    # joint_Position2 = mdp.JointPositionActionCfg(asset_name="robot", joint_names=["joint2"], scale=1)
-    # joint_Position3 = mdp.JointPositionActionCfg(asset_name="robot", joint_names=["joint3"], scale=1)
-    # joint_Position4 = mdp.JointPositionActionCfg(asset_name="robot", joint_names=["joint4"], scale=1)
-    # joint_Position5 = mdp.JointPositionActionCfg(asset_name="robot", joint_names=["joint5"], scale=1)
-    # joint_Position6 = mdp.JointPositionActionCfg(asset_name="robot", joint_names=["joint6"], scale=1)
+    # # 注释掉 effort代表不用力矩
+    # joint_effort1 = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["joint1"], scale=100.0)
+    # joint_effort2 = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["joint2"], scale=100.0)
+    # joint_effort3 = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["joint3"], scale=100.0)
+    # joint_effort4 = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["joint4"], scale=100.0)
+    # joint_effort5 = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["joint5"], scale=100.0)
+    # joint_effort6 = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["joint6"], scale=100.0)
+
+    # 注释掉position表示不用位置
+    joint_Position1 = mdp.JointPositionActionCfg(asset_name="robot", joint_names=["joint1"], scale=1)
+    joint_Position2 = mdp.JointPositionActionCfg(asset_name="robot", joint_names=["joint2"], scale=1)
+    joint_Position3 = mdp.JointPositionActionCfg(asset_name="robot", joint_names=["joint3"], scale=1)
+    joint_Position4 = mdp.JointPositionActionCfg(asset_name="robot", joint_names=["joint4"], scale=1)
+    joint_Position5 = mdp.JointPositionActionCfg(asset_name="robot", joint_names=["joint5"], scale=1)
+    joint_Position6 = mdp.JointPositionActionCfg(asset_name="robot", joint_names=["joint6"], scale=1)
 
 
 @configclass
@@ -90,24 +97,24 @@ class ObservationsCfg:
 class EventCfg:
     """Configuration for events."""
 
-    # reset
-    reset_cart_position = EventTerm(
-        func=mdp.reset_joints_by_offset,
+    # 重置场景到原样子
+    reset_cup_position = EventTerm(
+        func=mdp.reset_scene_to_default,
         mode="reset",
-        params={
-            "asset_cfg": SceneEntityCfg("robot", joint_names=["joint1"]),
-            "position_range": (-1.0, 1.0),
-            "velocity_range": (-0.5, 0.5),
-        },
     )
 
-    reset_pole_position = EventTerm(
-        func=mdp.reset_joints_by_offset,
+    # 重置CUP位置
+    reset_cup_pos = EventTerm(
+        func=mdp.reset_root_state_uniform,
         mode="reset",
         params={
-            "asset_cfg": SceneEntityCfg("robot", joint_names=["joint1"]),
-            "position_range": (-0.25 * math.pi, 0.25 * math.pi),
-            "velocity_range": (-0.25 * math.pi, 0.25 * math.pi),
+            "pose_range": {"x": (-0.5, 0.5), "y": (-0.5, 0.5), "yaw": (-3.14, 3.14)},
+            "velocity_range": {
+                # "x": (-0.5, 0.5),
+                # "y": (-0.5, 0.5),
+                # "z": (-0.5, 0.5),
+            },
+            "asset_cfg": SceneEntityCfg("Cup"),
         },
     )
 
@@ -130,7 +137,7 @@ class X5EnvCfg(ManagerBasedEnvCfg):
     def __post_init__(self) -> None:
         """初始化"""
         # general setting
-        self.decimation = 1  # 仿真数据间隔几步重新渲染到可视化中
+        self.decimation = 5  # 仿真数据间隔几步重新渲染到可视化中
         self.episode_length_s = 5  # 每个仿真周期的持续时间为5秒
         # viewer settings
         self.viewer.eye = (8.0, 0.0, 5.0)

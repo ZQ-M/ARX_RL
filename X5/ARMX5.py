@@ -32,7 +32,7 @@ X5_CFG = ArticulationCfg(
         joint_pos={
             "joint1": 0.0,
             "joint2": 1.0,  # 机械臂urdf的BUG 不抬起会造成碰撞箱锁死
-            "joint3": 1.0,
+            "joint3": 1.5,
             "joint4": 0.0,
             "joint5": 0.0,
             "joint6": 0.0
@@ -43,43 +43,43 @@ X5_CFG = ArticulationCfg(
             joint_names_expr=["joint1"],
             effort_limit=400.0,     # 最大力矩
             velocity_limit=100.0,   # 最大速度
-            stiffness=100.0,          # 关节刚度  0.0 意味着关节是柔性的 
-            damping=4.0,           # 关节阻尼系数，运动中能量损失，数值越高，运动的衰减越明显
+            stiffness=100.0,        # 关节刚度  0.0 意味着关节是柔性的
+            damping=10.0,         # 关节阻尼系数，运动中能量损失，数值越高，运动的衰减越明显
         ),
         "joint2_actuator": ImplicitActuatorCfg(
             joint_names_expr=["joint2"],
             effort_limit=400.0,
             velocity_limit=100.0,
             stiffness=100.0,
-            damping=4.0,
+            damping=10.0,
         ),
         "joint3_actuator": ImplicitActuatorCfg(
             joint_names_expr=["joint3"],
             effort_limit=400.0,
             velocity_limit=100.0,
             stiffness=80.0,
-            damping=4.0,
+            damping=10.0,
         ),
         "joint4_actuator": ImplicitActuatorCfg(
             joint_names_expr=["joint4"],
             effort_limit=400.0,
             velocity_limit=100.0,
             stiffness=100.0,
-            damping=4.0,
+            damping=10.0,
         ),
         "joint5_actuator": ImplicitActuatorCfg(
             joint_names_expr=["joint5"],
             effort_limit=400.0,
             velocity_limit=100.0,
             stiffness=100.0,
-            damping=4.0,
+            damping=10.0,
         ),
         "joint6_actuator": ImplicitActuatorCfg(
             joint_names_expr=["joint6"],
             effort_limit=400.0,
             velocity_limit=100.0,
             stiffness=100.0,
-            damping=4.0,
+            damping=10.0,
         ),
     },
     soft_joint_pos_limit_factor=4.0,
@@ -88,10 +88,10 @@ X5_CFG = ArticulationCfg(
 
 FRANKA_PANDA_HIGH_PD_CFG = X5_CFG.copy()
 FRANKA_PANDA_HIGH_PD_CFG.spawn.rigid_props.disable_gravity = True
-FRANKA_PANDA_HIGH_PD_CFG.actuators["joint1_actuator"].stiffness = 400.0
-FRANKA_PANDA_HIGH_PD_CFG.actuators["joint1_actuator"].damping = 80.0
-FRANKA_PANDA_HIGH_PD_CFG.actuators["joint5_actuator"].stiffness = 400.0
-FRANKA_PANDA_HIGH_PD_CFG.actuators["joint5_actuator"].damping = 80.0
+FRANKA_PANDA_HIGH_PD_CFG.actuators["joint1_actuator"].stiffness = 400.0  # 刚度
+FRANKA_PANDA_HIGH_PD_CFG.actuators["joint1_actuator"].damping = 80.0     # 阻尼
+FRANKA_PANDA_HIGH_PD_CFG.actuators["joint5_actuator"].stiffness = 400.0  # 刚度
+FRANKA_PANDA_HIGH_PD_CFG.actuators["joint5_actuator"].damping = 80.0     # 阻尼
 """
 具有更刚性 PD 控制的 Franka Emika Panda 机器人配置。
 此配置对于使用差分 IK 的任务空间控制很有用
