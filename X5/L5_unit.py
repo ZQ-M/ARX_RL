@@ -6,8 +6,7 @@ import argparse
 from omni.isaac.lab.app import AppLauncher
 
 # add argparse arguments
-parser = argparse.
-(description="Tutorial on creating a cartpole base environment.")
+parser = argparse.ArgumentParser(description="Tutorial on creating a cartpole base environment.")
 parser.add_argument("--num_envs", type=int, default=16, help="Number of environments to spawn.")
 
 # append AppLauncher cli args
@@ -38,7 +37,7 @@ def main():
     while simulation_app.is_running():
         with torch.inference_mode():
             # reset
-            if count % 500 == 0:
+            if count % 300 == 0:
                 count = 0
                 env.reset()
                 print("-" * 80)

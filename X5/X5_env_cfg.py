@@ -1,6 +1,6 @@
 """ 配置场景 """
 import omni.isaac.lab.sim as sim_utils
-from omni.isaac.lab.assets import ArticulationCfg, AssetBaseCfg
+from omni.isaac.lab.assets import ArticulationCfg, AssetBaseCfg, RigidObjectCfg
 from omni.isaac.lab.envs import ManagerBasedEnvCfg
 from omni.isaac.lab.managers import EventTermCfg as EventTerm
 from omni.isaac.lab.managers import ObservationGroupCfg as ObsGroup
@@ -35,7 +35,7 @@ class x5SceneCfg(InteractiveSceneCfg):
     )
 
     # CUP
-    Cup = AssetBaseCfg(
+    Cup = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/Cup",
         spawn=sim_utils.UsdFileCfg(
             usd_path="/home/ultron/ARX_RL/X5/CUP.usd",  # 指定USD文件的路径
@@ -44,7 +44,24 @@ class x5SceneCfg(InteractiveSceneCfg):
             rigid_props=sim_utils.RigidBodyPropertiesCfg(),        # 刚体
             collision_props=sim_utils.CollisionPropertiesCfg(),    # 碰撞属性
         ),
-        init_state=AssetBaseCfg.InitialStateCfg(
+        init_state=RigidObjectCfg.InitialStateCfg(
+            pos=(0.5, 0.0, 0.0),
+            rot=(0.0, 0.0, 0.0, 1.0)
+        )
+    )
+
+    # 测试用蓝色的长方体
+    BlueCuboid = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/Cuboid",
+        spawn=sim_utils.CuboidCfg(
+            size=(0.1, 0.1, 0.1),       # 长方体的大小是？长宽高
+            visible=True,               # 是否可见？
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(),         # 刚体
+            mass_props=sim_utils.MassPropertiesCfg(mass=1.0),       # 质量
+            collision_props=sim_utils.CollisionPropertiesCfg(),     # 碰撞箱
+            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 0.0, 1.0)),  # 颜色
+        ),
+        init_state=RigidObjectCfg.InitialStateCfg(
             pos=(0.5, 0.0, 0.0),
             rot=(0.0, 0.0, 0.0, 1.0)
         )
@@ -105,16 +122,20 @@ class EventCfg:
 
     # 重置CUP位置
     reset_cup_pos = EventTerm(
-        func=mdp.reset_root_state_uniform,
+        func=mdp.reset_root_state_uniform,  # 牢记这个reset只支持 RigidObject 和 Articulation
         mode="reset",
         params={
-            "pose_range": {"x": (-0.5, 0.5), "y": (-0.5, 0.5), "yaw": (-3.14, 3.14)},
+            "pose_range": {
+                "x": (-0.5, 0.5),
+                "y": (-0.5, 0.5),
+                "z": (0.0 , 1.0),
+                "yaw": (-3.14, 3.14)},
             "velocity_range": {
-                # "x": (-0.5, 0.5),
-                # "y": (-0.5, 0.5),
-                # "z": (-0.5, 0.5),
+                "x": (0.0, 0.0),
+                "y": (0.0, 0.0),
+                "z": (0.0, 0.0),
             },
-            "asset_cfg": SceneEntityCfg("Cup"),
+            "asset_cfg": SceneEntityCfg("BlueCuboid"),
         },
     )
 
